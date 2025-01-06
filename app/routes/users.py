@@ -32,13 +32,10 @@ def register_user():
     if User.get_by_email(data['email']):
         return jsonify({'error':'email already exists'}),409
 
-    password = data['password']
-    del data['password']
-
     new_user = User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'])
     db.session.add(new_user)
     db.session.commit()
-    new_user.save_password(password)
+    new_user.save_password(data['password'])
     return jsonify({'data':data}),201
 
 #login user

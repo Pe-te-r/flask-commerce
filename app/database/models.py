@@ -39,11 +39,6 @@ class Password(db.Model):
     # relationship
     user = db.Relationship('User',back_populates='password',uselist=False)
 
-    # def __init__(self,user_id,password):
-        # self.password =password
-        # self.user_id = user_id
-        # self.hash_password()
-
     def __repr__(self):
         return f'Password({self.password})'
     
@@ -57,3 +52,19 @@ class Password(db.Model):
         return bcypt.check_password_hash(hashed_pass,password)
     
 
+class Category(db.Model):
+    __tablename__ = 'category'
+    id = db.Column(db.UUID(),primary_key=True,nullable=False,default=uuid4())
+    name  = db.Column(db.String(255),nullable=False)
+
+    # relationship
+    subcategory = db.Relationship("SubCategory",back_populates='category',uselist=True)
+
+class SubCategory(db.Model):
+    __tablename__ = 'subcategory'
+    id=db.Column(db.UUID(),primary_key=True,nullable=False,default=uuid4())
+    category_id = db.Column(db.UUID(),db.ForeignKey('category.id'),nullable=False)
+    name = db.Column(db.String(100),unique=True,nullable=False)
+
+    # relationship
+    category = db.Relationship('Category',back_populates='subcategory',uselist=False)
