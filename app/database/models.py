@@ -88,6 +88,7 @@ class SubCategory(db.Model):
 
     # relationship
     category = db.Relationship('Category',back_populates='subcategory',uselist=False)
+    product=db.Relationship('Product',back_populates='subcategory',uselist=True)
 
     def to_json(self):
         return{
@@ -102,3 +103,24 @@ class SubCategory(db.Model):
     @classmethod
     def get_sub_category_by_name(cls,name):
         return cls.query.filter_by(name = name).first()
+    
+class Product(db.Model):
+    __tablename__='product'
+    id = db.Column(db.UUID,default=uuid4(),primary_key=True)
+    name = db.Column(db.String(100),nullable=False)
+    price=db.Column(db.Float,nullable=False)
+    sub_category_id = db.Column(db.UUID(),db.ForeignKey('subcategory.id'),nullable=False)
+
+    # relationship
+    subcategory=db.Relationship('SubCategory',back_populates='product',uselist=False)
+
+    def to_json(self):
+        return{
+            "name":self.name,
+            "price":self.price,
+            "category":self.subcategory.name
+        }
+    
+    @classmethod
+    def product_by_name(cls,name):
+        return cls.query.filter_by(name=name).first()
