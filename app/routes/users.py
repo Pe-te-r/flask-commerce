@@ -1,26 +1,60 @@
 from flask import  request, jsonify, Blueprint
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import create_access_token
-from uuid import uuid4
-from app.database.models import User,db
+from flask_jwt_extended import jwt_required,get_jwt_identity
+from flask_jwt_extended import create_access_token,get_jwt
+from uuid import uuid4,UUID
+from app.database.models import User,db,Role_Enum
 
 user_bp =Blueprint('user_bp',__name__)
 
 # get one user
-@user_bp.route("/users/<string:email>", methods=["GET"])
-def get_user(email):
-    user = User.get_by_email(email)
-    if not user:
-        return jsonify({"error": "user not found"}), 409
+# @user_bp.route("/users", methods=["GET"])
+# @jwt_required()
+# def get_user(email):
+#     email = request.args.get('email')
+#     id = request.args.get('id')
 
-    return jsonify(user.to_json())
+#     user=None
+#     if email:
+        # user = User.get_by_email(email)
+#     if id:
+#         user = User.get_by_id(id)
+#     if not user:
+#         return jsonify({"error": "user not found"}), 409
+
+#     return jsonify(user.to_json())
 
 # get all users
 @user_bp.route('/users',methods=['GET'])
+@jwt_required()
 def get_users():
+    # params
+    email = request.args.get('email')
     orders = request.args.get('orders')
+    id = request.args.get('id')
+    # auth
+    token_mail = get_jwt_identity()
+    claims = get_jwt()
+    role = claims.get('role')
+    user = None
+    if email:
+        user = User.get_by_email(email)
+    if id:
+        user = User.get_by_id(UUID(id))
+    
+    if (email or id) and not user:
+        return jsonify({'error':"no such user info"})
+
+    if user and user.email != token_mail and  role !='admin':
+        return jsonify({'error':'cannot access someone else data'})
+    if user and orders:
+        return jsonify({"data": user.to_json(show_orders=True)})
+    elif user:
+            return jsonify({'data':user.to_json()})
+
+    if role !='admin':
+        return jsonify({'error':'user not allowed'})
+
     users= User.query.all()
-    print(users[0].to_json(show_orders=True))
     if not users:
         return jsonify({"error": "no user  found"}), 404
     return jsonify({'data':[user.to_json(show_orders=orders) for user in users]})
@@ -46,8 +80,7 @@ def register_user():
         db.session.commit()
         new_user.save_password(password)
         return jsonify({'data':data}),201
-    except Exception as e:
-        print(e)
+    except Exception :
         return jsonify('error')
 
 
@@ -55,11 +88,15 @@ def register_user():
 @user_bp.route('/login',methods=['POST'])
 def login():
     data = request.get_json()
+    print(data)
     user = User.get_by_email(email=data['email'])
+    print(user)
+
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
-        token= create_access_token(identity=user.email)
+        more_info ={'role':user.role.value}
+        token= create_access_token(identity=user.email,additional_claims=more_info)
         return jsonify({"data":
         { "user":user.to_json(), "token":token}
         }),200
@@ -74,32 +111,50 @@ def login():
 def delete_user():
     data = request.get_json()
     user = User.get_by_email(data['email'])
-    print(user)
     if not user:
         return jsonify({'error':'user does not exists'}),409
-    
+    # auth
+    token_mail=get_jwt_identity()
+    claims = get_jwt()
+    if token_mail != user.email and claims.get('role') != 'admin':
+        return jsonify({'error':'cannot delete another user'})
+
     db.session.delete(user)
     db.session.commit()
     return jsonify({'data':'user delete'}),200
 
 # update user
-@user_bp.route('/users/<string:email>',methods=['PUT'])
+@user_bp.route('/users',methods=['PUT'])
 @jwt_required()
-def update_user(email):
-    user = User.get_by_email(email=email)
+def update_user():
+    # params
+    email = request.args.get('email')
+    id = request.args.get('id')
+    # auth
+    token_mail = get_jwt_identity()
+    claims = get_jwt()
+
+    user=None
+    if email:
+        user = User.get_by_email(email=email)
+    
+    if id:
+        user = User.get_by_id(id=id)
     if not user:
         return jsonify({'error':'user not found'})
     
+    if user.email != token_mail and claims.get('role') != 'admin':
+        return jsonify({'error':'cannot updated another person data'})
     data = request.get_json()
-    print(data)
 
-    if data['email']:
+    if 'email'  in data:
         user.email = data['email']
-    if data['last_name']:
+    if 'last_name' in data:
         user.last_name=data['last_name']
-    if data['first_name']:
+    if 'first_name' in data:
         user.first_name=data['first_name']
-    
+    if 'role' in data:
+        user.role = Role_Enum(data['role'])
     db.session.commit()
 
     return jsonify({'data':user.to_json()})

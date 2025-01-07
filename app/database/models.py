@@ -1,5 +1,11 @@
 from app.database import db, bcypt
 from uuid import uuid4
+import enum
+
+class Role_Enum(enum.Enum):
+    ADMIN = 'admin'
+    USER = 'user'
+    SELLER = 'seller'
 
 
 class User(db.Model):
@@ -8,6 +14,7 @@ class User(db.Model):
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    role = db.Column(db.Enum(Role_Enum),nullable=False,default= Role_Enum.USER)
 
     # relationship
     password = db.Relationship(
@@ -25,6 +32,7 @@ class User(db.Model):
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "email": self.email,
+            "role":self.role.value,
                 "orders": [{"id":self.id,"product":order.product.name,"paid":order.paid}  for order in self.order]
             }
         return {
@@ -32,6 +40,7 @@ class User(db.Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
+            "role":self.role.value
         }
 
         # end try
@@ -50,6 +59,10 @@ class User(db.Model):
     @classmethod
     def get_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
+
+    @classmethod
+    def get_by_id(cls,id):
+        return cls.query.filter_by(id=id).first()
 
 
 class Password(db.Model):
