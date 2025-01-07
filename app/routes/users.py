@@ -1,5 +1,7 @@
-from uuid import uuid4
 from flask import  request, jsonify, Blueprint
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import create_access_token
+from uuid import uuid4
 from app.database.models import User,db
 
 user_bp =Blueprint('user_bp',__name__)
@@ -57,12 +59,18 @@ def login():
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
-        return jsonify({'data':user.to_json()}),200
+        token= create_access_token(identity=user.email)
+        return jsonify({"data":
+        { "user":user.to_json(), "token":token}
+        }),200
+    else:
+        return jsonify({'error':'password not correct'})
         
     return jsonify({'error':'an error'}),
 
 # delete user
 @user_bp.route('/users',methods=['DELETE'])
+@jwt_required()
 def delete_user():
     data = request.get_json()
     user = User.get_by_email(data['email'])
@@ -76,6 +84,7 @@ def delete_user():
 
 # update user
 @user_bp.route('/users/<string:email>',methods=['PUT'])
+@jwt_required()
 def update_user(email):
     user = User.get_by_email(email=email)
     if not user:

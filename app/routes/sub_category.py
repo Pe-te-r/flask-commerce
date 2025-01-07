@@ -1,4 +1,5 @@
 from flask import  jsonify, request, Blueprint
+from flask_jwt_extended import jwt_required
 from uuid import uuid4
 from app.database.models import SubCategory,db,Category
 
@@ -6,6 +7,7 @@ sub_category_route  = Blueprint('sub_category_route',__name__)
 
 # create sub_category and get all sub_category
 @sub_category_route.route('/subcategory',methods=['GET','POST'])
+@jwt_required()
 def sub_category():
     if request.method =="GET":
         subcategorys = SubCategory.query.all()
@@ -32,6 +34,7 @@ def sub_category():
 
 # update sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods = ['PUT'])
+@jwt_required()
 def update_sub_category(subcategory):
     print('update')
     sub_category = SubCategory.get_sub_category_by_name(subcategory)
@@ -59,6 +62,7 @@ def update_sub_category(subcategory):
 
 # delete sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods = ['DELETE'])
+@jwt_required()
 def delete_sub_category(subcategory):
     print('delete')
     sub_category = SubCategory.get_sub_category_by_name(subcategory)

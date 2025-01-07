@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from app.routes import register_routes
 from app.database import db,bcypt
@@ -10,6 +11,7 @@ def create_app():
     bcypt.init_app(app)
     db.init_app(app)
     Migrate(app,db)
+    JWTManager(app)
     
     register_routes(app)
     

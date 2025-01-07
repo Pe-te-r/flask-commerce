@@ -1,4 +1,5 @@
 from flask import request, jsonify, Blueprint
+from flask_jwt_extended import jwt_required
 from uuid import uuid4
 from app.database.models import db,Product,SubCategory
 
@@ -15,6 +16,7 @@ def all_products():
 
 # add new product
 @products_bp.route('/products',methods=['POST'])
+@jwt_required()
 def add_product():
     data = request.get_json()
     if 'name' not in data  or 'price' not in data or 'subcategory' not in data:
@@ -41,6 +43,7 @@ def one_product(name):
 
 # update product
 @products_bp.route('/products/<string:name>',methods=['PUT'])
+@jwt_required()
 def update_product(name):
     product = Product.product_by_name(name)
     if not product:
@@ -66,6 +69,7 @@ def update_product(name):
 
 # delete product
 @products_bp.route('/products/<string:name>',methods=['DELETE'])
+@jwt_required()
 def delete_product(name):
     product = Product.product_by_name(name)
     if not product:

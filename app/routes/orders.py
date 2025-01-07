@@ -1,4 +1,5 @@
 from flask import  request, jsonify, Blueprint
+from flask_jwt_extended import jwt_required
 from uuid import UUID,uuid4
 from app.database.models import Order,db
 
@@ -6,6 +7,7 @@ orders_bp = Blueprint('orders_bp',__name__)
 
 # get all orders
 @orders_bp.route('/orders',methods=['GET'])
+@jwt_required()
 def all_orders():
     orders = Order.query.all()
 
@@ -16,6 +18,7 @@ def all_orders():
 
 # create order
 @orders_bp.route('/orders',methods=["POST"])
+@jwt_required()
 def add_order():
     data = request.get_json()
     if 'user_id' not in data or 'product_id' not in data:

@@ -1,4 +1,5 @@
 from flask import jsonify, request, Blueprint
+from flask_jwt_extended import jwt_required
 from uuid import uuid4
 from app.database.models import db,Category
 category_bp = Blueprint('category_bp',__name__)
@@ -27,6 +28,7 @@ def category():
 
 # delete category
 @category_bp.route('/category/<string:name>',methods = ['DELETE'])
+@jwt_required()
 def delete_category(name):
     category = Category.get_category_by_name(name)
     if not category:
@@ -46,6 +48,7 @@ def get_category(name):
 
 # update one category
 @category_bp.route('/category/<string:name>',methods =['PUT'])
+@jwt_required()
 def update_category(name):
     print(name)
     category = Category.get_category_by_name(name)

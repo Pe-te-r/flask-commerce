@@ -18,7 +18,7 @@ class User(db.Model):
     def __repr__(self):
         return f"User({self.first_name} {self.last_name})"
 
-    def to_json(self, show_orders):
+    def to_json(self, show_orders=False):
         if show_orders or show_orders == "true" or show_orders == 'True':
             return {
                 "id": str(self.id),
@@ -113,7 +113,6 @@ class SubCategory(db.Model):
     def to_json(self):
         return {
             "id": self.id,
-            # 'category_id':self.category_id,
             "name": self.name,
         }
 
