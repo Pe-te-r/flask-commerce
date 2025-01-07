@@ -66,11 +66,10 @@ class Category(db.Model):
             return{
                 'id':self.id,
                 'name':self.name,
-                'subcategory':{
-                    [category.to_json() for category in self.subcategory]
-                }
+                'subcategory':[category.to_json() for category in self.subcategory]
             }
 
+        print([category.to_json() for category in self.subcategory])
         return{
             'id':self.id,
             'name':self.name
@@ -93,6 +92,9 @@ class SubCategory(db.Model):
     def to_json(self):
         return{
             'id':self.id,
-            'category_id':self.category_id,
+            # 'category_id':self.category_id,
             'name':self.name
         }
+    
+    def __repr__(self):
+        return f'SubCategory({self.name})'

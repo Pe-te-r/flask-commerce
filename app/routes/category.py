@@ -1,24 +1,28 @@
 from flask import jsonify, request, Blueprint
+from uuid import uuid4
 from app.database.models import db,Category
 category_bp = Blueprint('category_bp',__name__)
 
 @category_bp.route('/category',methods=['GET','POST'])
 def category():
     if request.method == 'GET':
+    
         categories = Category.query.all()
         if not categories:
             return jsonify({'error':'no category found'}),404
-        return jsonify({'data':[category.to_json() for category in categories]}),200
+        return jsonify(
+            {"data": [category.to_json(sub_category=True) for category in categories]}
+        ), 200
     
     if request.method == 'POST':
         data =request.get_json()
         if Category.get_category_by_name(data['name']):
             return jsonify({'error':'category already exists'})
 
-        category = Category(name=data['name'])
+        category = Category(name=data['name'],id=uuid4())
         db.session.add(category)
         db.session.commit()
-        return jsonify({'data':category.to_json()}),201
+        return jsonify({"data": category.to_json()}), 201
 
 @category_bp.route('/category/<string:name>',methods = ['DELETE'])
 def delete_category(name):
@@ -39,7 +43,9 @@ def get_category(name):
 
 @category_bp.route('/category/<string:name>',methods =['PUT'])
 def update_category(name):
+    print(name)
     category = Category.get_category_by_name(name)
+    print(category)
     if not category:
         return jsonify({'error':'category not found'})
     data = request.get_json()
