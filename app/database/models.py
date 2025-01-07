@@ -10,6 +10,7 @@ class User(db.Model):
     
     # relationship
     password = db.Relationship('Password',back_populates='user',uselist=False,cascade='all, delete')
+    order=db.Relationship('Order',back_populates='user',uselist=True)
 
     def  __repr__(self):
         return f'User({self.first_name} {self.last_name})'
@@ -113,6 +114,7 @@ class Product(db.Model):
 
     # relationship
     subcategory=db.Relationship('SubCategory',back_populates='product',uselist=False)
+    order=db.Relationship('Order',back_populates='product',uselist=True)
 
     def to_json(self):
         return{
@@ -124,3 +126,22 @@ class Product(db.Model):
     @classmethod
     def product_by_name(cls,name):
         return cls.query.filter_by(name=name).first()
+
+
+class Order(db.Model):
+    __tablename__='order'
+    id = db.Column(db.UUID(),default=uuid4(),nullable=False,primary_key=True)
+    user_id = db.Column(db.UUID(),db.ForeignKey('user.id'),nullable=False)
+    product_id = db.Column(db.UUID(),db.ForeignKey('product.id'),nullable=False)
+    paid = db.Column(db.Boolean(),default=False,nullable=False)
+
+    # relationship
+    user=db.Relationship('User',back_populates='order',uselist=False)
+    product = db.Relationship('Product',back_populates='order',uselist=False)
+
+    def to_json(self):
+        return {
+            "user":self.user.to_json(),
+            "product":self.product.to_json()
+
+        }
