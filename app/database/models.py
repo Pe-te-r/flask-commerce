@@ -1,5 +1,6 @@
 from app.database import db,bcypt
 from uuid import uuid4
+
 class User(db.Model):
     __tablename__='user'
     id=db.Column(db.UUID(),primary_key=True,default=uuid4())
@@ -8,7 +9,7 @@ class User(db.Model):
     email=db.Column(db.String(100),nullable=False,unique=True)
     
     # relationship
-    password = db.Relationship('Password',back_populates='user',uselist=False)
+    password = db.Relationship('Password',back_populates='user',uselist=False,cascade='all, delete')
 
     def  __repr__(self):
         return f'User({self.first_name} {self.last_name})'
@@ -55,10 +56,30 @@ class Password(db.Model):
 class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.UUID(),primary_key=True,nullable=False,default=uuid4())
-    name  = db.Column(db.String(255),nullable=False)
+    name  = db.Column(db.String(255),nullable=False,unique=True)
 
     # relationship
     subcategory = db.Relationship("SubCategory",back_populates='category',uselist=True)
+
+    def to_json(self,sub_category=False):
+        if sub_category:
+            return{
+                'id':self.id,
+                'name':self.name,
+                'subcategory':{
+                    [category.to_json() for category in self.subcategory]
+                }
+            }
+
+        return{
+            'id':self.id,
+            'name':self.name
+        }
+    
+    @classmethod
+    def get_category_by_name(cls,name):
+        return cls.query.filter_by(name=name).first()
+    
 
 class SubCategory(db.Model):
     __tablename__ = 'subcategory'
@@ -68,3 +89,10 @@ class SubCategory(db.Model):
 
     # relationship
     category = db.Relationship('Category',back_populates='subcategory',uselist=False)
+
+    def to_json(self):
+        return{
+            'id':self.id,
+            'category_id':self.category_id,
+            'name':self.name
+        }
