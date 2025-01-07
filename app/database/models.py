@@ -98,3 +98,7 @@ class SubCategory(db.Model):
     
     def __repr__(self):
         return f'SubCategory({self.name})'
+    
+    @classmethod
+    def get_sub_category_by_name(cls,name):
+        return cls.query.filter_by(name = name).first()
