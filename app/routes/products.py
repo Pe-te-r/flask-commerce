@@ -1,4 +1,5 @@
 from flask import request, jsonify, Blueprint
+from uuid import uuid4
 from app.database.models import db,Product,SubCategory
 
 products_bp = Blueprint('products_bp',__name__)
@@ -23,7 +24,7 @@ def add_product():
     if not subcategory:
         return jsonify({'error':"category does not exits"})
     
-    new_product = Product(name=data['name'],price=data['price'],sub_category_id=subcategory.id)
+    new_product = Product(name=data['name'],price=data['price'],sub_category_id=subcategory.id,id=uuid4())
     db.session.add(new_product)
     db.session.commit()
     

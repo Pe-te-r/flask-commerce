@@ -16,25 +16,19 @@ def get_user(email):
 # get all users
 @user_bp.route('/users',methods=['GET'])
 def get_users():
-    try:
-        users= User.query.all()
-        # comment: 
-    except Exception as e:
-        print(e)
-        return jsonify('error')
-    # end try
-
+    orders = request.args.get('orders')
+    users= User.query.all()
+    print(users[0].to_json(show_orders=True))
     if not users:
         return jsonify({"error": "no user  found"}), 404
-    print('two')
-    print(users)
-    return jsonify({'data':[user.to_json() for user in users]})
+    return jsonify({'data':[user.to_json(show_orders=orders) for user in users]})
 
 # register users
 @user_bp.route('/users',methods=['POST'])
 def register_user():
     try:
         data = request.get_json()
+
 
         if 'email' not in data or  'password' not  in data or 'last_name' not in data or 'first_name' not in data:
             return jsonify({'error':'some information missing'})

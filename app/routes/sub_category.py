@@ -4,6 +4,7 @@ from app.database.models import SubCategory,db,Category
 
 sub_category_route  = Blueprint('sub_category_route',__name__)
 
+# create sub_category and get all sub_category
 @sub_category_route.route('/subcategory',methods=['GET','POST'])
 def sub_category():
     if request.method =="GET":
@@ -17,17 +18,19 @@ def sub_category():
         data  = request.get_json()
         if not data['category'] or not data['name']:
             return jsonify({'error':'missing important info'})
+        category = Category.get_category_by_name(data["category"])
+        if not category:
+            return jsonify({'error':'category not available'})
         sub_category_exits=SubCategory.get_sub_category_by_name(data['name'])
         if sub_category_exits:
             return jsonify({'error':'sub category already available'})
-        category = Category.get_category_by_name(data["category"])
         subcategory = SubCategory(id=uuid4(),category_id=category.id,name=data['name'])
         db.session.add(subcategory)
         db.session.commit()
 
         return jsonify({'data':subcategory.to_json()})
 
-
+# update sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods = ['PUT'])
 def update_sub_category(subcategory):
     print('update')
@@ -54,6 +57,7 @@ def update_sub_category(subcategory):
 
     return jsonify({'data':'subcategory updated'})
 
+# delete sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods = ['DELETE'])
 def delete_sub_category(subcategory):
     print('delete')
@@ -65,6 +69,7 @@ def delete_sub_category(subcategory):
     db.session.commit()
     return jsonify({'data':'sub category deleted successfully'})
 
+# get one sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods =['GET'])
 def get_one_sub_category(subcategory):
     print(subcategory)

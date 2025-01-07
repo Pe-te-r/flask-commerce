@@ -3,6 +3,7 @@ from uuid import uuid4
 from app.database.models import db,Category
 category_bp = Blueprint('category_bp',__name__)
 
+# get all category and add category
 @category_bp.route('/category',methods=['GET','POST'])
 def category():
     if request.method == 'GET':
@@ -24,6 +25,7 @@ def category():
         db.session.commit()
         return jsonify({"data": category.to_json()}), 201
 
+# delete category
 @category_bp.route('/category/<string:name>',methods = ['DELETE'])
 def delete_category(name):
     category = Category.get_category_by_name(name)
@@ -34,6 +36,7 @@ def delete_category(name):
     db.session.commit()
     return jsonify({'data':'category deleted'}),200
 
+# get one category
 @category_bp.route('/category/<string:name>',methods = ['GET'])
 def get_category(name):
     category = Category.get_category_by_name(name)
@@ -41,6 +44,7 @@ def get_category(name):
         return jsonify({'error':'category not found'})
     return jsonify({"data":category.to_json()})
 
+# update one category
 @category_bp.route('/category/<string:name>',methods =['PUT'])
 def update_category(name):
     print(name)
