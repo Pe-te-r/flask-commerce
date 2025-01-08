@@ -95,7 +95,7 @@ def login():
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
-        more_info ={'role':user.role.value}
+        more_info ={'role':user.role.value,id:user.id}
         token= create_access_token(identity=user.email,additional_claims=more_info)
         return jsonify({"data":
         { "user":user.to_json(), "token":token}

@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required,get_jwt
 from uuid import uuid4
 from app.database.models import db,Product,SubCategory
 
@@ -42,12 +42,21 @@ def one_product(name):
     return jsonify({'data':product.to_json()})
 
 # update product
-@products_bp.route('/products/<string:name>',methods=['PUT'])
+@products_bp.route('/products',methods=['PUT'])
 @jwt_required()
-def update_product(name):
-    product = Product.product_by_name(name)
+def update_product():
+    # params
+    id = request.args.get('id')
+    # auth
+    claims = get_jwt()
+
+    product = Product.product_by_id(id)
     if not product:
         return jsonify({'error':'product not found'})
+    
+    if product.product_owner != claims.get('id'):
+        return jsonify({'error':'action not authorized'})
+    
 
     data = request.get_json()
     if 'name' in data:
@@ -57,7 +66,7 @@ def update_product(name):
         product.price = data['price']
     
     if 'subcategory' in data:
-        sub_category = SubCategory.get_sub_category_by_name(name)
+        sub_category = SubCategory.get_sub_category_by_name(data['subcategory'])
         if not sub_category:
             return jsonify({'error':'sub_category not found'})
         
@@ -68,13 +77,18 @@ def update_product(name):
     return jsonify({'data':'product update successfully'})
 
 # delete product
-@products_bp.route('/products/<string:name>',methods=['DELETE'])
+@products_bp.route('/products',methods=['DELETE'])
 @jwt_required()
-def delete_product(name):
-    product = Product.product_by_name(name)
+def delete_product():
+    id= request.args.get('id')
+    product = Product.product_by_id(id)
     if not product:
         return jsonify({'error':'product not found'})
     
+    claims = get_jwt()
+    if product.product_owner !=claims.get('id') and claims.get('role') != 'admin':
+        return jsonify({'error':'action not authorized'})
+
     db.session.delete(product)
     db.session.commit()
 
