@@ -10,3 +10,6 @@ def get_random_code():
         code_str += i
     
     return code_str
+
+def verify_random_code(saved,user):
+    return saved == user
