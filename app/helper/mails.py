@@ -1,3 +1,3 @@
-def send_email(sender,receiver,code):
-    print(f'email send to {receiver} from {sender} and the code is')
+def send_email(receiver,code):
+    print(f'email send to {receiver} from  and the code is')
 
