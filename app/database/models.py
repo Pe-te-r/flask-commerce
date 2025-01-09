@@ -22,6 +22,7 @@ class User(db.Model):
     )
     order = db.Relationship("Order", back_populates="user", uselist=True)
     product = db.Relationship("Product", back_populates="user", uselist=True)
+    auth = db.Relationship('Auth',back_populates='user',uselist=False)
 
     def __repr__(self):
         return f"User({self.first_name} {self.last_name})"
@@ -190,3 +191,24 @@ class Order(db.Model):
                 "name": self.user.email,
             },
         }
+
+
+class Auth(db.Model):
+    __tablename__ = 'auth'
+    user_id = db.Column(db.UUID,db.ForeignKey('user.id'),nullable=False,primary_key=True)
+    random_code = db.Column(db.String(6))
+    totp_secret = db.Column(db.String(30))
+
+    # relationship
+    user = db.Relationship('User',back_populates='auth',uselist=False)
+
+    @classmethod
+    def get_by_userId(cls,id):
+        return cls.query.filter_by(user_id=id).first()
+    
+    @classmethod
+    def set_initials(cls,user_id,random_code,totp_secret):
+        new = cls(user_id=user_id,random_code=random_code,totp_secret=totp_secret)
+        db.session.add(new)
+        db.session.commit()
+        return True
