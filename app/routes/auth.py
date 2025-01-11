@@ -64,6 +64,7 @@ def verify_code():
         return jsonify({'error':'code missing'})
     
     user = User.get_by_id(UUID(data['id']))
+    print(user)
     if not user:
         return jsonify({'error':'user not available'})
     
@@ -78,10 +79,14 @@ def verify_code():
 
 
 # update verification code
-@auth_route.route('code/<string:id>',methods=['PUT'])
+@auth_route.route('/code',methods=['PUT'])
 @jwt_required()
-def update_code(id):
-    user = User.get_by_id(UUID(id))
+def update_code():
+    data = request.get_json()
+    if 'id' not in data:
+        return jsonify({'error':'id is missing'})
+    
+    user = User.get_by_id(UUID(data['id']))
     if not user:
         return jsonify({'error':'user not found'})
     
@@ -90,12 +95,13 @@ def update_code(id):
     if user.email != email:
         return jsonify({'error':'An authorized'})
 
-    auth = Auth.get_by_userId(UUID(id))
+    auth = Auth.get_by_userId(UUID(data['id']))
     if not auth:
         return jsonify({'error':'code not set'})
     auth.random_code =get_random_code()
 
     db.session.commit()
+    return jsonify({'data':'code updated'})
 
 # verify totp
 @auth_route.route('/totp/<string:id>',methods=['POST'])
@@ -118,15 +124,22 @@ def verify_totp(id):
         return jsonify({'error':'code not provided'})
     
     code = data['code']
-    if  verify_otp(auth.totp_secret,code):
+    if  verify_otp(auth.totp_secret,str(code)):
         return jsonify({'data':True})
+    else:
+        return jsonify({'data':False})
+        
 
 
 
 # update totp secret code
-@auth_route.route('/totp/<string:id>',methods =['PUT'])
+@auth_route.route('/totp',methods =['PUT'])
 @jwt_required()
-def update_totp(id):
+def update_totp():
+    data = request.get_json()
+    if 'id' not in data:
+        return jsonify({'error':'user id is missing'})
+    id = data['id']
     user = User.get_by_id(UUID(id))
     if not user:
         return jsonify({'error':'user not found'})
@@ -142,4 +155,6 @@ def update_totp(id):
     
     auth.totp_secret=get_otp()
     db.session.commit()
+
+    return jsonify({'data':'totp updated'})
 

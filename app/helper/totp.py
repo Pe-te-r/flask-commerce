@@ -6,7 +6,7 @@ def get_otp():
 
 def verify_otp(secret,code):
     try:
-        code = pyotp.TOTP(str(secret))
-        return code.verify(code)
+        totp = pyotp.TOTP(str(secret))
+        return totp.verify(code)
     except Exception:
         return False
