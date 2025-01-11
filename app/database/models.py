@@ -1,5 +1,5 @@
 from app.database import db, bcypt
-from uuid import uuid4
+from uuid import UUID, uuid4
 import enum
 
 class Role_Enum(enum.Enum):
@@ -201,14 +201,16 @@ class Auth(db.Model):
 
     # relationship
     user = db.Relationship('User',back_populates='auth',uselist=False)
-
+    def __repr__(self):
+        return f'Auth({self.user_id} {self.random_code} {self.totp_secret})'
     @classmethod
     def get_by_userId(cls,id):
         return cls.query.filter_by(user_id=id).first()
     
     @classmethod
     def set_initials(cls,user_id,random_code,totp_secret):
-        new = cls(user_id=user_id,random_code=random_code,totp_secret=totp_secret)
+        new = cls(user_id=UUID(user_id),random_code=random_code,totp_secret=totp_secret)
+        print(new)
         db.session.add(new)
         db.session.commit()
         return True

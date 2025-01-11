@@ -22,6 +22,12 @@ def sent_auth():
     email = get_jwt_identity()
     if user.email != email:
         return jsonify({'error':'action not permited'})
+    
+    print(id)
+    auth= Auth.get_by_userId(UUID(id))
+    print(auth)
+    if  auth is not None:
+        return jsonify({'error':'auth already available'})
 
     if Auth.set_initials(user_id=id,random_code=get_random_code(),totp_secret=get_otp()):
         return jsonify({'data':'code set'})
@@ -72,7 +78,7 @@ def verify_code():
 
 
 # update verification code
-@auth_route.route('code/<string:id>',mehods=['PUT'])
+@auth_route.route('code/<string:id>',methods=['PUT'])
 @jwt_required()
 def update_code(id):
     user = User.get_by_id(UUID(id))

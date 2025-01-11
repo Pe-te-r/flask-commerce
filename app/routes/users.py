@@ -88,15 +88,16 @@ def register_user():
 @user_bp.route('/login',methods=['POST'])
 def login():
     data = request.get_json()
-    print(data)
     user = User.get_by_email(email=data['email'])
-    print(user)
 
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
-        more_info ={'role':user.role.value,id:user.id}
+        print(user)
+        more_info ={'role':user.role.value,'id':user.id}
+        print(more_info)
         token= create_access_token(identity=user.email,additional_claims=more_info)
+        print(token)
         return jsonify({"data":
         { "user":user.to_json(), "token":token}
         }),200
