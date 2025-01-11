@@ -15,17 +15,18 @@ def sent_auth():
     id = None
     if 'id' not in data:
         return jsonify({'error':'user id missing'})
-    id = data['id']
-    user = User.get_by_id(UUID(id))
+    try:
+        id = UUID(data['id'])
+    except Exception:
+        return jsonify({'error':'wrong id'})
+    user = User.get_by_id(id)
     if not user:
         return jsonify({'error':'user not available'})
     email = get_jwt_identity()
     if user.email != email:
         return jsonify({'error':'action not permited'})
     
-    print(id)
-    auth= Auth.get_by_userId(UUID(id))
-    print(auth)
+    auth= Auth.get_by_userId(id)
     if  auth is not None:
         return jsonify({'error':'auth already available'})
 
@@ -35,14 +36,21 @@ def sent_auth():
     return jsonify({'error':'code not set'})
 
 # send random code
-@auth_route.route('/code/:id',methods=['GET'])
+@auth_route.route('/code/<string:id>',methods=['GET'])
 @jwt_required()
 def get_code(id):    
-    user = User.get_by_id(UUID(id))
-    if not user:
+    user_id = None
+    try:
+        user_id = UUID(id)
+        if not user_id:
+            return jsonify({'error':'id not provided'})
+    except Exception :
+        return jsonify({'error':'wrong id'})
+    user = User.get_by_id(user_id)
+    if  user is None:
         return jsonify({'error':'user not found'})
 
-    auth = Auth.get_by_userId(UUID(id))
+    auth = Auth.get_by_userId(user_id)
     if not auth:
         return jsonify({'data':'auth not found'})
 
@@ -63,15 +71,19 @@ def verify_code():
     if 'code' not in data:
         return jsonify({'error':'code missing'})
     
-    user = User.get_by_id(UUID(data['id']))
-    print(user)
+    user_id =None
+    try:
+        user_id = UUID(data["id"])
+    except Exception:
+        return jsonify({'error':'wrong id'})
+    user = User.get_by_id(user_id)
     if not user:
         return jsonify({'error':'user not available'})
     
     email = get_jwt_identity()
     if user.email != email:
         return jsonify({'error':'action not authorized'})
-    auth = Auth.get_by_userId(UUID(data['id']))
+    auth = Auth.get_by_userId(user_id)
 
     if verify_random_code(auth.random_code,data['code']):
         return jsonify({'data':True})
@@ -86,7 +98,12 @@ def update_code():
     if 'id' not in data:
         return jsonify({'error':'id is missing'})
     
-    user = User.get_by_id(UUID(data['id']))
+    user_id = None
+    try:
+        user_id = UUID(data['id'])
+    except Exception :
+        return jsonify({'error':'wrong id'})
+    user = User.get_by_id(user_id)
     if not user:
         return jsonify({'error':'user not found'})
     
@@ -95,7 +112,7 @@ def update_code():
     if user.email != email:
         return jsonify({'error':'An authorized'})
 
-    auth = Auth.get_by_userId(UUID(data['id']))
+    auth = Auth.get_by_userId(user_id)
     if not auth:
         return jsonify({'error':'code not set'})
     auth.random_code =get_random_code()
@@ -107,10 +124,15 @@ def update_code():
 @auth_route.route('/totp/<string:id>',methods=['POST'])
 @jwt_required()
 def verify_totp(id):
-    auth = Auth.get_by_userId(UUID(id))
+    user_id = None
+    try:
+        user_id=UUID(id)
+    except Exception:
+        return jsonify({'error':'wrong id'})
+    auth = Auth.get_by_userId(user_id)
     if not auth:
         return jsonify({'error':'not available'})
-    user = User.get_by_id(UUID(id))
+    user = User.get_by_id(user_id)
     if not user:
         return jsonify({'error':'user not found'})
 
@@ -139,7 +161,13 @@ def update_totp():
     data = request.get_json()
     if 'id' not in data:
         return jsonify({'error':'user id is missing'})
-    id = data['id']
+    
+    id=None
+    try:
+        id = UUID(data['id'])
+    except Exception :
+        return jsonify({'error':'wrong id'})
+
     user = User.get_by_id(UUID(id))
     if not user:
         return jsonify({'error':'user not found'})
