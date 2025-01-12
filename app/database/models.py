@@ -33,16 +33,16 @@ class User(db.Model):
                 "id": str(self.id),
                 "first_name": self.first_name,
                 "last_name": self.last_name,
-                "email": self.email,
             "role":self.role.value,
+                "email": self.email,
                 "orders": [{"id":self.id,"product":order.product.name,"paid":order.paid}  for order in self.order]
             }
         return {
             "id": str(self.id),
             "first_name": self.first_name,
             "last_name": self.last_name,
+            "role":self.role.value,
             "email": self.email,
-            "role":self.role.value
         }
 
         # end try
