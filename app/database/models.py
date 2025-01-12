@@ -194,7 +194,9 @@ class Order(db.Model):
                 "name": self.user.email,
             },
         }
-
+    @classmethod
+    def get_by_id(cls,id):
+        return cls.query.filter_by(id=id).first()
 
 class Auth(db.Model):
     __tablename__ = 'auth'
