@@ -36,7 +36,13 @@ def delete_category(id):
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({'error':'action not authorized'})
-    category = Category.get_category_by_id(UUID(id))
+
+    category_id= None
+    try:
+        category_id=UUID(id)
+    except Exception:
+        return jsonify({'error':'wrong id'})
+    category = Category.get_category_by_id(category_id)
     if not category:
         return jsonify({'error':'category not found'})
 
@@ -47,7 +53,13 @@ def delete_category(id):
 # get one category
 @category_bp.route('/category/<string:id>',methods = ['GET'])
 def get_category(id):
-    category = Category.get_category_by_id(UUID(id))
+    category_id= None
+    try:
+        category_id=UUID(id)
+    except Exception:
+        return jsonify({'error':'wrong id'})
+
+    category = Category.get_category_by_id(category_id)
     if not category:
         return jsonify({'error':'category not found'})
     return jsonify({"data":category.to_json()})
@@ -59,7 +71,12 @@ def update_category(id):
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({'error':'action not authorized'})
-    category = Category.get_category_by_id(UUID(id))
+    category_id= None
+    try:
+        category_id=UUID(id)
+    except Exception:
+        return jsonify({'error':'wrong id'})
+    category = Category.get_category_by_id(category_id)
     if not category:
         return jsonify({'error':'category not found'})
     data = request.get_json()
