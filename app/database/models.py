@@ -196,6 +196,7 @@ class Order(db.Model):
 
     def to_json(self):
         return {
+            "id":self.id,
             "product": self.product.name,
             "price": self.product.price,
             "sub_category": self.product.subcategory.name,

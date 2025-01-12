@@ -60,7 +60,7 @@ def get_one_order(id):
         return jsonify({'error':'order not found'})
 
     claims = get_jwt()
-    if claims.get("role") != "admin" and order.user_id != claims.get('id'):
+    if claims.get("role") != "admin" and str(order.user_id) != claims.get('id'):
         return jsonify({"error": "action not authorized"})
     
     return jsonify({"data": order.to_json()})
