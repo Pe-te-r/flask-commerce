@@ -100,7 +100,7 @@ class Category(db.Model):
     )
 
     def to_json(self, sub_category=None):
-        if sub_category:
+        if sub_category :
             return {
                 "id": self.id,
                 "name": self.name,

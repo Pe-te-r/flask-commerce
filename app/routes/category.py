@@ -63,7 +63,9 @@ def get_category(id):
     category = Category.get_category_by_id(category_id)
     if not category:
         return jsonify({'error':'category not found'})
-    return jsonify({"data":category.to_json()})
+    
+    sub_category = request.args.get('subcategory')
+    return jsonify({"data": category.to_json(sub_category=sub_category)})
 
 # update one category
 @category_bp.route('/category/<string:id>',methods =['PUT'])
