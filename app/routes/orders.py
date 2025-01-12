@@ -1,7 +1,7 @@
 from flask import  request, jsonify, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt
 from uuid import UUID,uuid4
-from app.database.models import Order,db
+from app.database.models import Order,db,User,Product
 
 orders_bp = Blueprint('orders_bp',__name__)
 
@@ -29,6 +29,13 @@ def add_order():
         user_id = UUID(data['user_id'])
     except Exception:
         return jsonify({'error':'wrong id'})
+    
+    user = User.get_by_id(user_id)
+    if not user:
+        return jsonify({'error':'user not found'})
+    product = Product.product_by_id(id=UUID(data['product_id']))
+    if not product:
+        return jsonify({'error':'product not found'})
 
     new_order = Order(product_id=UUID(data["product_id"]), user_id=user_id, id=uuid4())
     db.session.add(new_order)
@@ -57,3 +64,15 @@ def get_one_order(id):
         return jsonify({"error": "action not authorized"})
     
     return jsonify({"data": order.to_json()})
+
+
+@orders_bp.route('/orders/<string:id>',methods=['DELETE'])
+def delete_order(id):
+    order= Order.get_by_id(UUID(id))
+    if not order:
+        return jsonify({'error':'order details not found'})
+    
+    db.session.delete(order)
+    db.session.commit()
+
+    return jsonify({'error':'order delete'})
