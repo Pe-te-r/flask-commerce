@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt
-from uuid import uuid4
+from uuid import UUID, uuid4
 from app.database.models import db,Product,SubCategory
 
 products_bp = Blueprint('products_bp',__name__)
@@ -33,9 +33,9 @@ def add_product():
     return jsonify({'data':new_product.to_json()})
 
 # get one product
-@products_bp.route('/products/<string:name>',methods = ['GET'])
-def one_product(name):
-    product = Product.product_by_name(name)
+@products_bp.route('/products/<string:id>',methods = ['GET'])
+def one_product(id):
+    product = Product.product_by_id(UUID(id))
     if not product:
         return jsonify({'error':'product not found'})
     
@@ -50,7 +50,7 @@ def update_product():
     # auth
     claims = get_jwt()
 
-    product = Product.product_by_id(id)
+    product = Product.product_by_id(UUID(id))
     if not product:
         return jsonify({'error':'product not found'})
     
@@ -65,8 +65,8 @@ def update_product():
     if 'price' in data:
         product.price = data['price']
     
-    if 'subcategory' in data:
-        sub_category = SubCategory.get_sub_category_by_name(data['subcategory'])
+    if 'subcategory_id' in data:
+        sub_category = SubCategory.get_sub_category_by_id(UUID(data['subcategory_id']))
         if not sub_category:
             return jsonify({'error':'sub_category not found'})
         
@@ -81,7 +81,7 @@ def update_product():
 @jwt_required()
 def delete_product():
     id= request.args.get('id')
-    product = Product.product_by_id(id)
+    product = Product.product_by_id(UUID(id))
     if not product:
         return jsonify({'error':'product not found'})
     

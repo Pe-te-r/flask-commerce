@@ -140,6 +140,10 @@ class SubCategory(db.Model):
     @classmethod
     def get_sub_category_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
+    
+    @classmethod
+    def get_sub_category_by_id(cls, id):
+        return cls.query.filter_by(id=id).first()
 
 
 class Product(db.Model):
