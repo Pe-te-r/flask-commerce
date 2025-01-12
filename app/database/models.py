@@ -114,6 +114,9 @@ class Category(db.Model):
     def get_category_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
+    @classmethod
+    def get_category_by_id(cls):
+        return cls.query.filter_by(id=id).frist()
 
 class SubCategory(db.Model):
     __tablename__ = "subcategory"

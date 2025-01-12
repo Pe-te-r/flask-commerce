@@ -1,6 +1,6 @@
 from flask import jsonify, request, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt
-from uuid import uuid4
+from uuid import UUID, uuid4
 from app.database.models import db,Category
 category_bp = Blueprint('category_bp',__name__)
 
@@ -16,6 +16,7 @@ def all_category():
 
 # add category
 @category_bp.route('/category',methods=['POST'])
+@jwt_required()
 def category():
     claims = get_jwt()
     if claims.get("role") != "admin":
@@ -29,13 +30,13 @@ def category():
     return jsonify({"data": category.to_json()}), 201
 
 # delete category
-@category_bp.route('/category/<string:name>',methods = ['DELETE'])
+@category_bp.route('/category/<string:id>',methods = ['DELETE'])
 @jwt_required()
-def delete_category(name):
+def delete_category(id):
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({'error':'action not authorized'})
-    category = Category.get_category_by_name(name)
+    category = Category.get_category_by_id(UUID(id))
     if not category:
         return jsonify({'error':'category not found'})
 
@@ -44,21 +45,21 @@ def delete_category(name):
     return jsonify({'data':'category deleted'}),200
 
 # get one category
-@category_bp.route('/category/<string:name>',methods = ['GET'])
-def get_category(name):
-    category = Category.get_category_by_name(name)
+@category_bp.route('/category/<string:id>',methods = ['GET'])
+def get_category(id):
+    category = Category.get_category_by_id(UUID(id))
     if not category:
         return jsonify({'error':'category not found'})
     return jsonify({"data":category.to_json()})
 
 # update one category
-@category_bp.route('/category/<string:name>',methods =['PUT'])
+@category_bp.route('/category/<string:id>',methods =['PUT'])
 @jwt_required()
-def update_category(name):
+def update_category(id):
     claims = get_jwt()
     if claims.get('role') != 'admin':
         return jsonify({'error':'action not authorized'})
-    category = Category.get_category_by_name(name)
+    category = Category.get_category_by_id(UUID(id))
     if not category:
         return jsonify({'error':'category not found'})
     data = request.get_json()
