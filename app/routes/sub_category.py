@@ -10,8 +10,11 @@ def get_sub_category():
         subcategorys = SubCategory.query.all()
         if not subcategorys:
             return jsonify({'error':'no sub category available'})
+
+        params_products = request.args.get("products")
+
         
-        return jsonify({'data':[subcategory.to_json() for subcategory in subcategorys]})
+        return jsonify({'data':[subcategory.to_json(params_products) for subcategory in subcategorys]})
 
 # create sub_category and get all sub_category
 @sub_category_route.route('/subcategory',methods=['GET','POST'])
@@ -82,8 +85,12 @@ def delete_sub_category(subcategory):
 # get one sub_category
 @sub_category_route.route('/subcategory/<string:subcategory>',methods =['GET'])
 def get_one_sub_category(subcategory):
+    # params 
+    params_products = request.args.get("products")
+    
+    # print(params_products)
     sub_category = SubCategory.get_sub_category_by_name(subcategory)
     if not sub_category:
         return jsonify({'error':'sub category does not exists'})
     
-    return jsonify({'data':sub_category.to_json()})
+    return jsonify({'data':sub_category.to_json(params_products)})

@@ -99,7 +99,7 @@ class Category(db.Model):
         "SubCategory", back_populates="category", uselist=True
     )
 
-    def to_json(self, sub_category=False):
+    def to_json(self, sub_category=None):
         if sub_category:
             return {
                 "id": self.id,
@@ -115,8 +115,8 @@ class Category(db.Model):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
-    def get_category_by_id(cls):
-        return cls.query.filter_by(id=id).frist()
+    def get_category_by_id(cls,id):
+        return cls.query.filter_by(id=id).first()
 
 class SubCategory(db.Model):
     __tablename__ = "subcategory"
@@ -128,7 +128,13 @@ class SubCategory(db.Model):
     category = db.Relationship("Category", back_populates="subcategory", uselist=False)
     product = db.Relationship("Product", back_populates="subcategory", uselist=True)
 
-    def to_json(self):
+    def to_json(self,products=None):
+        if products:
+            return {
+                "id":self.id,
+                "name":self.name,
+                "products":[item.to_json() for item in self.product]
+            }
         return {
             "id": self.id,
             "name": self.name,

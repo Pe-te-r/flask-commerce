@@ -26,7 +26,9 @@ def add_product():
     if not subcategory:
         return jsonify({'error':"category does not exits"})
     
-    new_product = Product(name=data['name'],price=data['price'],sub_category_id=subcategory.id,id=uuid4())
+    claims = get_jwt()
+
+    new_product = Product(name=data['name'],price=data['price'],sub_category_id=subcategory.id,id=uuid4(),product_owner=UUID(claims.get('id')))
     db.session.add(new_product)
     db.session.commit()
     

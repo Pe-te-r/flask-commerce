@@ -10,7 +10,8 @@ def all_category():
     categories = Category.query.all()
     if not categories:
         return jsonify({'error':'no category found'}),404
-    return jsonify({"data": [category.to_json(sub_category=True) for category in categories]}), 200
+    sub_category = request.args.get('subcategory')
+    return jsonify({"data": [category.to_json(sub_category=sub_category) for category in categories]}), 200
     
 
 

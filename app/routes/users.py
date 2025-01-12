@@ -64,23 +64,29 @@ def get_users():
 def register_user():
     try:
         data = request.get_json()
+        print(data)
 
-
-        if 'email' not in data or  'password' not  in data or 'last_name' not in data or 'first_name' not in data:
+        if 'email' not in data or  'password' not  in data or 'last_name' not in data or 'first_name' not in data :
             return jsonify({'error':'some information missing'})
         
         if User.get_by_email(data['email']):
             return jsonify({'error':'email already exists'}),409
         
+        print('here')
         password = data['password']
         del data['password']
 
-        new_user = User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],id = uuid4())
+        role_enum=None
+        if 'role' in data:
+            role_enum= Role_Enum(data['role']) 
+
+        new_user = User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],id = uuid4(),role=role_enum)
         db.session.add(new_user)
         db.session.commit()
         new_user.save_password(password)
         return jsonify({'data':data}),201
-    except Exception :
+    except Exception  as e:
+        print(e)
         return jsonify('error')
 
 
