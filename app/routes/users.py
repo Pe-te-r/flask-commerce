@@ -99,18 +99,13 @@ def login():
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
-        print(user)
         more_info ={'role':user.role.value,'id':user.id}
-        print(more_info)
         token= create_access_token(identity=user.email,additional_claims=more_info)
-        print(token)
-        return jsonify({"data":
-        { "user":user.to_json(), "token":token}
-        }),200
+        return jsonify({"data":{ "user":user.to_json(), "token":token} }),200
     else:
-        return jsonify({'error':'password not correct'})
+        return jsonify({'error':'password not correct'}),401
         
-    return jsonify({'error':'an error'}),
+    return jsonify({'error':'an error'}),400
 
 # delete user
 @user_bp.route('/users',methods=['DELETE'])

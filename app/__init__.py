@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from flask_migrate import Migrate
 from app.routes import register_routes
 from app.database import db,bcypt
@@ -12,7 +13,7 @@ def create_app():
     db.init_app(app)
     Migrate(app,db)
     JWTManager(app)
-    
+    CORS(app)
     register_routes(app)
     
     return app
