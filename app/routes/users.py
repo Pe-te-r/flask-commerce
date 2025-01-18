@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required,get_jwt_identity
 from flask_jwt_extended import create_access_token,get_jwt
 from uuid import uuid4,UUID
 from app.database.models import User,db,Role_Enum
-
+from app.helper.mails.mails import send_email
 user_bp =Blueprint('user_bp',__name__)
 
 # get one user
@@ -39,7 +39,6 @@ def get_users():
 def register_user():
     try:
         data = request.get_json()
-        print(data)
 
         if 'email' not in data or  'password' not  in data or 'last_name' not in data or 'first_name' not in data :
             return jsonify({'error':'some information missing'})
@@ -47,7 +46,6 @@ def register_user():
         if User.get_by_email(data['email']):
             return jsonify({'error':'email already exists'}),409
         
-        print('here')
         password = data['password']
         del data['password']
 
@@ -58,8 +56,19 @@ def register_user():
         new_user = User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],id = uuid4(),role=role_enum)
         db.session.add(new_user)
         db.session.commit()
+        # db.session.refresh(new_user)
         new_user.save_password(password)
-        return jsonify({'data':data}),201
+        print('here before all')
+        user = {'first_name':new_user.first_name}
+        print('here before all2')
+        send_email(
+            subject="Welcome to Phantom Market!",
+            recipients=new_user.email,
+            template_name="register",
+            user=user,
+        )
+        print('mail.sent')
+        return jsonify({'data':'success'}),201
     except Exception  as e:
         print(e)
         return jsonify('error')

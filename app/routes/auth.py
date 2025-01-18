@@ -3,7 +3,11 @@ from flask_jwt_extended import jwt_required,get_jwt_identity
 from uuid import UUID
 from app.database.models import Auth,db
 from app.database.models import User
-from app.helper import  get_otp,get_random_code,send_email,verify_otp,verify_random_code
+# from app.helper import  get_random_code,send_email,verify_otp,verify_random_code
+from app.helper.totp import get_otp
+from app.helper.totp import verify_otp
+from app.helper.random_code import get_random_code
+from app.helper.random_code import verify_random_code
 
 auth_route = Blueprint('auth_route',__name__)
 
@@ -57,7 +61,7 @@ def get_code(id):
     email = get_jwt_identity()
     if user.email != email:
         return jsonify({'error':'action prohibited'})
-    send_email(email,auth.random_code)
+    # send_email(email,auth.random_code)
     return jsonify({'data':f'code :{auth.random_code} sent to email: {email}'})
     
 # verify random code
