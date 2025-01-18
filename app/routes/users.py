@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required,get_jwt_identity
 from flask_jwt_extended import create_access_token,get_jwt
 from uuid import uuid4,UUID
 from app.database.models import User,db,Role_Enum
-from app.helper.mails.mails import send_email
+from app.helper.mails import send_email
 user_bp =Blueprint('user_bp',__name__)
 
 # get one user
@@ -59,14 +59,15 @@ def register_user():
         # db.session.refresh(new_user)
         new_user.save_password(password)
         print('here before all')
-        user = {'first_name':new_user.first_name}
+        # user = {'first_name':new_user.first_name}
         print('here before all2')
-        send_email(
-            subject="Welcome to Phantom Market!",
-            recipients=new_user.email,
-            template_name="register",
-            user=user,
-        )
+        # send_email(
+        #     subject="Welcome to Phantom Market!",
+        #     recipients=new_user.email,
+        #     template_name="register",
+        #     user=user,
+        # )
+        send_email(firstname=new_user.first_name,email=new_user.email)
         print('mail.sent')
         return jsonify({'data':'success'}),201
     except Exception  as e:

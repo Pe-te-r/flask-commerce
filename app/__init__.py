@@ -5,9 +5,8 @@ from flask_migrate import Migrate
 from app.routes import register_routes
 from app.database import db,bcypt
 from config import Config
-from app.helper.mails import mail
-# from flask_mail import Mail
-
+# from app.helper.mails import mail
+from flask_mail import Mail
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -16,7 +15,8 @@ def create_app():
     db.init_app(app)
     Migrate(app,db)
     JWTManager(app)
-    mail.init_app(app)
+    # mail.init_app(app)
+    Mail(app)
     CORS(app)
     register_routes(app)
     
