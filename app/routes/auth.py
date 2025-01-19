@@ -12,34 +12,51 @@ from app.helper.mails import send_email
 
 auth_route = Blueprint('auth_route',__name__)
 
-# set all
-@auth_route.route('/auth',methods=['POST'])
+
+# # set all
+@auth_route.route("/auth", methods=["POST"])
 @jwt_required()
 def sent_auth():
     data = request.get_json()
     id = None
-    if 'id' not in data:
-        return jsonify({'error':'user id missing'})
+    if "id" not in data:
+        return jsonify({"error": "user id missing"})
     try:
-        id = UUID(data['id'])
+        id = UUID(data["id"])
     except Exception:
-        return jsonify({'error':'wrong id'})
+        return jsonify({"error": "wrong id"})
+
+    # Use id directly (no need for UUID(id) again)
     user = User.get_by_id(id)
+    print(user)
+    print('on auth')
     if not user:
-        return jsonify({'error':'user not available'})
+        return jsonify({"error": "user not available"})
+
     email = get_jwt_identity()
     if user.email != email:
-        return jsonify({'error':'action not permited'})
-    
-    auth= Auth.get_by_userId(id)
-    if  auth is not None:
-        return jsonify({'error':'auth already available'})
+        return jsonify({"error": "action not permitted"})
+
+    auth = Auth.get_by_userId(id)
+    if auth is not None:
+        return jsonify({"error": "auth already available"})
+
     random_code = get_random_code()
     if Auth.set_initials(user_id=id, random_code=random_code, totp_secret=get_otp()):
-        send_email(firstname=user.first_name,email=user.email,template='code',data=random_code)
-        return jsonify({'data':'code sent'}),200
-    
-    return jsonify({'error':'code not set'})
+        send_email(
+            firstname=user.first_name,
+            email=user.email,
+            template="code",
+            data=random_code,
+        )
+        return jsonify({"data": "code sent"}), 200
+
+    return jsonify({"error": "code not set"})
+
+
+# "f1910bc2-2e80-4a44-baba-9f749352ce00"
+# "f1910bc2-2e80-4a44-baba-9f749352ce00"
+
 
 # send random code
 @auth_route.route('/code/<string:id>',methods=['GET'])

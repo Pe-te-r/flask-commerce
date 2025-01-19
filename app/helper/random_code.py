@@ -3,6 +3,7 @@ from random import sample
 
 def get_random_code():
     letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"
+    letters = "1234567890"
     code_str=''
     code = sample(letters,k=5)
 

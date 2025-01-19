@@ -17,7 +17,9 @@ def create_app():
     JWTManager(app)
     # mail.init_app(app)
     Mail(app)
-    CORS(app)
+    # CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+
     register_routes(app)
     
     return app

@@ -4,6 +4,8 @@ from flask_jwt_extended import create_access_token,get_jwt
 from uuid import uuid4,UUID
 from app.database.models import User,db,Role_Enum
 from app.helper.mails import send_email
+from app.helper.random_code import verify_random_code
+
 user_bp =Blueprint('user_bp',__name__)
 
 # get one user
@@ -58,15 +60,7 @@ def register_user():
         db.session.commit()
         # db.session.refresh(new_user)
         new_user.save_password(password)
-        print('here before all')
-        # user = {'first_name':new_user.first_name}
-        print('here before all2')
-        # send_email(
-        #     subject="Welcome to Phantom Market!",
-        #     recipients=new_user.email,
-        #     template_name="register",
-        #     user=user,
-        # )
+
         send_email(firstname=new_user.first_name,email=new_user.email)
         print('mail.sent')
         return jsonify({'data':'success'}),201
@@ -80,10 +74,14 @@ def register_user():
 def login():
     data = request.get_json()
     user = User.get_by_email(email=data['email'])
-
     if not user:
         return jsonify({'error':'Email not found'}),404
     if user.verify_password(data["password"]):
+        if 'code' in data:
+            verified=verify_random_code(user.auth.random_code, data["code"])
+            if not verified:
+                return jsonify({"error": "code not verified"}), 400
+
         more_info ={'role':user.role.value,'id':user.id}
         token= create_access_token(identity=user.email,additional_claims=more_info)
         return jsonify({"data":{ "user":user.to_json(), "token":token} }),200

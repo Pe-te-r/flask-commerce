@@ -43,9 +43,10 @@ class User(db.Model):
             "id": str(self.id),
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "role":self.role.value,
+            "role": self.role.value,
             "email": self.email,
-            "mail_verified":self.mail_verified
+            "mail_verified": self.mail_verified,
+            "available": self.auth.available if self.auth  else False
         }
 
         # end try
@@ -67,7 +68,7 @@ class User(db.Model):
 
     @classmethod
     def get_by_id(cls,id):
-        return cls.query.filter_by(id=id).first()
+        return cls.query.filter(User.id==id).first()
 
 
 class Password(db.Model):
@@ -217,6 +218,7 @@ class Auth(db.Model):
     user_id = db.Column(db.UUID,db.ForeignKey('user.id'),nullable=False,primary_key=True)
     random_code = db.Column(db.String(6))
     totp_secret = db.Column(db.String(30))
+    available=db.Column(db.Boolean,default=True,nullable=False)
 
     # relationship
     user = db.Relationship('User',back_populates='auth',uselist=False)
@@ -228,7 +230,7 @@ class Auth(db.Model):
     
     @classmethod
     def set_initials(cls,user_id,random_code,totp_secret):
-        new = cls(user_id=UUID(user_id),random_code=random_code,totp_secret=totp_secret)
+        new = cls(user_id=user_id,random_code=random_code,totp_secret=totp_secret)
         print(new)
         db.session.add(new)
         db.session.commit()
