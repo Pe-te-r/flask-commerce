@@ -8,6 +8,7 @@ from app.helper.totp import get_otp
 from app.helper.totp import verify_otp
 from app.helper.random_code import get_random_code
 from app.helper.random_code import verify_random_code
+from app.helper.mails import send_email
 
 auth_route = Blueprint('auth_route',__name__)
 
@@ -33,9 +34,10 @@ def sent_auth():
     auth= Auth.get_by_userId(id)
     if  auth is not None:
         return jsonify({'error':'auth already available'})
-
-    if Auth.set_initials(user_id=id,random_code=get_random_code(),totp_secret=get_otp()):
-        return jsonify({'data':'code set'})
+    random_code = get_random_code()
+    if Auth.set_initials(user_id=id, random_code=random_code, totp_secret=get_otp()):
+        send_email(firstname=user.first_name,email=user.email,template='code',data=random_code)
+        return jsonify({'data':'code sent'}),200
     
     return jsonify({'error':'code not set'})
 
@@ -61,8 +63,8 @@ def get_code(id):
     email = get_jwt_identity()
     if user.email != email:
         return jsonify({'error':'action prohibited'})
-    # send_email(email,auth.random_code)
-    return jsonify({'data':f'code :{auth.random_code} sent to email: {email}'})
+    send_email(firstname=user.first_name,email=user.email,template='code',data=auth.random_code)
+    return jsonify({'data':'code sent to the email'})
     
 # verify random code
 @auth_route.route('/code',methods=['POST'])

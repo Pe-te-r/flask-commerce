@@ -16,11 +16,11 @@ def send_email(firstname, email, template='new', data=None):
     )
 
     # Render the HTML template with dynamic content
-    # if template == "code":
-    #     msg.subject = "Your verification code"
-    #     msg.html = render_template(
-    #         "code.html",  message_body=message_body, code=data
-    #     )
+    if template == "code":
+        msg.subject = "Your verification code"
+        msg.html = render_template(
+            "code.html",  code=data
+        )
     if template == "new":
         msg.subject = "Welcome to our platform"
         msg.html = render_template(

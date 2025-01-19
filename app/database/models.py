@@ -14,6 +14,7 @@ class User(db.Model):
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    mail_verified=db.Column(db.Boolean,default=False,nullable=False)
     role = db.Column(db.Enum(Role_Enum),nullable=False,default= Role_Enum.USER)
 
     # relationship
@@ -33,6 +34,7 @@ class User(db.Model):
                 "id": str(self.id),
                 "first_name": self.first_name,
                 "last_name": self.last_name,
+            "mail_verified":self.mail_verified,
             "role":self.role.value,
                 "email": self.email,
                 "orders": [{"id":self.id,"product":order.product.name,"paid":order.paid}  for order in self.order]
@@ -43,6 +45,7 @@ class User(db.Model):
             "last_name": self.last_name,
             "role":self.role.value,
             "email": self.email,
+            "mail_verified":self.mail_verified
         }
 
         # end try
