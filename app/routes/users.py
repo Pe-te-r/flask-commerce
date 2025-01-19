@@ -1,4 +1,4 @@
-from flask import  request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt_identity
 from flask_jwt_extended import create_access_token,get_jwt
 from uuid import uuid4,UUID
@@ -83,8 +83,11 @@ def login():
                 return jsonify({"error": "code not verified"}), 400
 
         more_info ={'role':user.role.value,'id':user.id}
-        token= create_access_token(identity=user.email,additional_claims=more_info)
-        return jsonify({"data":{ "user":user.to_json(), "token":token} }),200
+        access_token= create_access_token(identity=user.email,additional_claims=more_info)
+        # response = make_response(jsonify({"data":{ "user":user.to_json()}}))
+        # response.set_cookie('access_token', access_token, httponly=True, secure=True, samesite='Strict')
+        # return response
+        return jsonify({"data": {"user": user.to_json(), "token": access_token}}), 200
     else:
         return jsonify({'error':'password not correct'}),401
         

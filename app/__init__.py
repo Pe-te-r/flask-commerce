@@ -18,7 +18,7 @@ def create_app():
     # mail.init_app(app)
     Mail(app)
     # CORS(app)
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}},supports_credentials=True)
 
     register_routes(app)
     
