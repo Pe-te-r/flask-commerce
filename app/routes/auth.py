@@ -1,5 +1,5 @@
-from flask import  request,  jsonify, Blueprint
-from flask_jwt_extended import jwt_required,get_jwt_identity
+from flask import json, json,  request,  jsonify, Blueprint
+from flask_jwt_extended import jwt_required,get_jwt_identity,get_jwt
 from uuid import UUID
 from app.database.models import Auth,db
 from app.database.models import User
@@ -176,6 +176,15 @@ def verify_totp(id):
         
 
 
+# get totp secret code
+@auth_route.route('/totp/<string:id>',methods=['GET'])
+@jwt_required()
+def get_totp(id):
+    claims=get_jwt()
+    if id != claims.get('id'):
+        return jsonify({'error':'action not authorize'}),401
+    auth_totp = Auth.get_by_userId(UUID(id))
+    return jsonify(auth_totp.totp_secret)
 
 # update totp secret code
 @auth_route.route('/totp',methods =['PUT'])

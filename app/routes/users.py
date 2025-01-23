@@ -30,7 +30,6 @@ def get_users():
     role = claims.get('role')
     if role !='admin':
         return jsonify({'error':'user not allowed'}),403
-
     users= User.query.all()
     if not users:
         return jsonify({"error": "no user  found"}), 404
