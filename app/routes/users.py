@@ -142,6 +142,9 @@ def update_user():
         user.first_name=data['first_name']
     if 'role' in data:
         user.role = Role_Enum(data['role'])
+    
+    if 'password' in data:
+        user
     db.session.commit()
 
     return jsonify({'data':user.to_json()})

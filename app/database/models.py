@@ -91,6 +91,11 @@ class Password(db.Model):
     @staticmethod
     def verify(hashed_pass, password):
         return bcypt.check_password_hash(hashed_pass, password)
+    
+    @classmethod
+    def get_password_by_userid(cls,id):
+        return cls.query.filter(cls.user_id == id).first()
+
 
 
 class Category(db.Model):
@@ -218,6 +223,7 @@ class Auth(db.Model):
     user_id = db.Column(db.UUID,db.ForeignKey('user.id'),nullable=False,primary_key=True)
     random_code = db.Column(db.String(6))
     totp_secret = db.Column(db.String(30))
+    totp_enabled=db.Column(db.Boolean,default=False,nullable=False)
     available=db.Column(db.Boolean,default=True,nullable=False)
 
     # relationship

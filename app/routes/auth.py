@@ -161,18 +161,20 @@ def verify_totp(id):
 
     email = get_jwt_identity()
     if user.email != email:
-        return jsonify({'error':'you are not authorized'})
+        return jsonify({'error':'you are not authorized'}),403
     
     data = request.get_json()
 
     if 'code' not in data:
-        return jsonify({'error':'code not provided'})
+        return jsonify({'error':'code not provided'}),400
     
     code = data['code']
     if  verify_otp(auth.totp_secret,str(code)):
-        return jsonify({'data':True})
+        auth.totp_enabled=True
+        db.session.commit()
+        return jsonify({'data':True}),200
     else:
-        return jsonify({'data':False})
+        return jsonify({'data':False}),401
         
 
 
@@ -184,6 +186,8 @@ def get_totp(id):
     if id != claims.get('id'):
         return jsonify({'error':'action not authorize'}),401
     auth_totp = Auth.get_by_userId(UUID(id))
+    if auth_totp.totp_enabled:
+        return jsonify(True)
     return jsonify(auth_totp.totp_secret)
 
 # update totp secret code
