@@ -185,13 +185,17 @@ def verify_2fa(id):
         return jsonify({"error": "action not authorize"}), 401
     auth_totp = Auth.get_by_userId(UUID(id))
     if not auth_totp:
-        return jsonify({'error':'not setuped'})
+        return jsonify({'error':'not setuped'}),404
     data = request.get_json()
+    print(data)
+    print('here one')
     if 'random_code' in data and not  verify_random_code(auth_totp.random_code,data['random_code']):
-        return jsonify({'error':'random code error'})
+        return jsonify({'error':'random code error'}),400
+    print('here two')
     
     if 'totp_code' in data and not verify_otp(auth_totp.totp_secret,data['totp_code']):
-        return jsonify({'error':'totp code error'})
+        return jsonify({'error':'totp code error'}),400
+    print('here three')
     
     return jsonify({'data':True})
 

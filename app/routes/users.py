@@ -53,7 +53,7 @@ def register_user():
         del data['password']
 
         role_enum=None
-        if 'role' in data:
+        if 'role' in data:                                                                                                                                                                                                                                                                                                                                                          
             role_enum= Role_Enum(data['role']) 
 
         new_user = User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],id = uuid4(),role=role_enum)
