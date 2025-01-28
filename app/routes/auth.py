@@ -177,6 +177,24 @@ def verify_totp(id):
         return jsonify({'data':False}),401
         
 
+@auth_route.route('/verify/<string:id>',methods=['POST'])
+@jwt_required()
+def verify_2fa(id):
+    claims=get_jwt()
+    if id != claims.get("id"):
+        return jsonify({"error": "action not authorize"}), 401
+    auth_totp = Auth.get_by_userId(UUID(id))
+    if not auth_totp:
+        return jsonify({'error':'not setuped'})
+    data = request.get_json()
+    if 'random_code' in data and not  verify_random_code(auth_totp.random_code,data['random_code']):
+        return jsonify({'error':'random code error'})
+    
+    if 'totp_code' in data and not verify_otp(auth_totp.totp_secret,data['totp_code']):
+        return jsonify({'error':'totp code error'})
+    
+    return jsonify({'data':True})
+
 
 # get totp secret code
 @auth_route.route('/totp/<string:id>',methods=['GET'])

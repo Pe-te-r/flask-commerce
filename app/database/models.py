@@ -94,7 +94,7 @@ class Password(db.Model):
     
     @classmethod
     def get_password_by_userid(cls,id):
-        return cls.query.filter(cls.user_id == id).first()
+        return cls.query.filter(cls.user_id == UUID(id)).first()
 
 
 

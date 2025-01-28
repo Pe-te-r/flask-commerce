@@ -2,7 +2,7 @@ from flask import request, jsonify, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt_identity
 from flask_jwt_extended import create_access_token,get_jwt
 from uuid import uuid4,UUID
-from app.database.models import User,db,Role_Enum
+from app.database.models import User,db,Role_Enum,Password
 from app.helper.mails import send_email
 from app.helper.random_code import verify_random_code
 
@@ -16,6 +16,8 @@ def get_user(id):
     user = User.get_by_id(UUID(id))
     if not user:
         return jsonify({"error": "user not found"}), 409
+    
+    print(user)
 
     return jsonify(user.to_json())
 
@@ -111,12 +113,12 @@ def delete_user():
     return jsonify({'data':'user delete'}),200
 
 # update user
-@user_bp.route('/users',methods=['PUT'])
+@user_bp.route('/users/<string:id>',methods=['PUT'])
 @jwt_required()
-def update_user():
+def update_user(id):
     # params
     email = request.args.get('email')
-    id = request.args.get('id')
+    # id = request.args.get('id')
     # auth
     token_mail = get_jwt_identity()
     claims = get_jwt()
@@ -126,7 +128,8 @@ def update_user():
         user = User.get_by_email(email=email)
     
     if id:
-        user = User.get_by_id(id=id)
+        user = User.get_by_id(id=UUID(id))
+ 
     if not user:
         return jsonify({'error':'user not found'})
     
@@ -143,8 +146,24 @@ def update_user():
     if 'role' in data:
         user.role = Role_Enum(data['role'])
     
-    if 'password' in data:
-        user
+    if 'old_password' in data:
+        password = Password.get_password_by_userid(id)
+        if Password.verify(password.password,data['old_password']):
+            hashed_password = Password.hash_password(data['new_password'])
+            password.password = hashed_password
     db.session.commit()
 
-    return jsonify({'data':user.to_json()})
+    return jsonify({'data':'success'})
+
+
+@user_bp.route('/password/<string:id>',methods=['PUT'])
+@jwt_required()
+def update_password(id):
+    user = User.get_by_id(UUID(id))
+    if not user:
+        return jsonify({'error':'user not found'}),404
+    token_mail = get_jwt_identity()
+    if token_mail != user.email:
+        return jsonify({'error':'action not authorized'}),401
+    
+    return jsonify({'data':'successful update'})
