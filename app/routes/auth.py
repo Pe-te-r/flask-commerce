@@ -1,8 +1,8 @@
-from flask import json, json,  request,  jsonify, Blueprint
+from flask import   request,  jsonify, Blueprint
 from flask_jwt_extended import jwt_required,get_jwt_identity,get_jwt
 from uuid import UUID
 from app.database.models import Auth,db
-from app.database.models import User
+from app.database.models import User,Password
 # from app.helper import  get_random_code,send_email,verify_otp,verify_random_code
 from app.helper.totp import get_otp
 from app.helper.totp import verify_otp
@@ -190,11 +190,11 @@ def verify_2fa(id):
     print(data)
     print('here one')
     if 'random_code' in data and not  verify_random_code(auth_totp.random_code,data['random_code']):
-        return jsonify({'error':'random code error'}),400
+        return jsonify({'error':'email code error'}),400
     print('here two')
     
     if 'totp_code' in data and not verify_otp(auth_totp.totp_secret,data['totp_code']):
-        return jsonify({'error':'totp code error'}),400
+        return jsonify({'error':'2FA code error'}),400
     print('here three')
     
     return jsonify({'data':True})
@@ -243,4 +243,28 @@ def update_totp():
     db.session.commit()
 
     return jsonify({'data':'totp updated'})
+
+@auth_route.route('/password/<string:id>',methods=['PUT'])
+@jwt_required()
+def change_pass(id):
+    user = User.get_by_id(UUID(id))
+    if not user:
+        return jsonify({'error':'user not found'}),404
+    
+    email = get_jwt_identity()
+    if email != user.email:
+        return jsonify({'error':'not authorize'}),401
+    
+    password= Password.get_password_by_userid(UUID(id))
+
+    data = request.get_json()
+    print(data)
+    if 'password' in data:
+        password.password = Password.hash_password(data['password'])
+        db.session.commit()
+        db.session.refresh(password)
+        print(password.password)
+        return jsonify({'data':'password updated'})
+    
+    return jsonify({'error':'password not sent'})
 
