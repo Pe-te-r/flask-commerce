@@ -167,3 +167,5 @@ def update_password(id):
         return jsonify({'error':'action not authorized'}),401
     
     return jsonify({'data':'successful update'})
+
+    
